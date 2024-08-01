@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { generateImage } from '@/lib/generateImage';
 import { convertToAnimate } from '@/lib/convertToAnimate';
 
 export default function Home() {
@@ -19,11 +18,11 @@ export default function Home() {
         },
         body: JSON.stringify({ text: inputText }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to generate image');
       }
-  
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
@@ -88,40 +87,65 @@ export default function Home() {
   };
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">SVG Image Generator</h1>
-      <div className="mb-4">
+    <main className="p-4 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center">SVG Image Generator</h1>
+      
+      <div className="mb-6">
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          className="border p-2 mr-2"
-          placeholder="Enter text for image"
+          className="w-full border p-2 rounded"
+          placeholder="Enter text for image generation"
         />
-        <button onClick={handleGenerateImage} className="bg-blue-500 text-white p-2 rounded">
+        <button 
+          onClick={handleGenerateImage} 
+          className="mt-2 w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
+        >
           Generate Image
         </button>
       </div>
+
       {initialImage && (
-        <div className="mb-4">
-          <img src={initialImage} alt="Generated" className="mb-2" />
-          <button onClick={handleConvertToSvg} className="bg-green-500 text-white p-2 rounded">
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-2">Generated Image</h2>
+          <img src={initialImage} alt="Generated" className="w-full mb-2 border rounded" />
+          <button 
+            onClick={handleConvertToSvg} 
+            className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600 transition-colors"
+          >
             Convert to Single Line SVG
           </button>
         </div>
       )}
+
       {singleLineSvg && (
-        <div className="mb-4">
-          <div dangerouslySetInnerHTML={{ __html: singleLineSvg }} />
-          <button onClick={handleConvertToAnimatedSvg} className="bg-purple-500 text-white p-2 rounded mt-2">
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-2">Single Line SVG</h2>
+          <div 
+            dangerouslySetInnerHTML={{ __html: singleLineSvg }} 
+            className="w-full mb-2 border rounded p-2"
+          />
+          <button 
+            onClick={handleConvertToAnimatedSvg} 
+            className="w-full bg-purple-500 text-white p-2 rounded hover:bg-purple-600 transition-colors"
+          >
             Convert to Animated SVG
           </button>
         </div>
       )}
+
       {animatedSvg && (
-        <div className="mb-4">
-          <div dangerouslySetInnerHTML={{ __html: animatedSvg }} />
-          <button onClick={handleDownloadAnimatedSvg} className="bg-red-500 text-white p-2 rounded mt-2">
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-2">Animated SVG</h2>
+          <div 
+            dangerouslySetInnerHTML={{ __html: animatedSvg }} 
+            className="w-full mb-2 border rounded p-2"
+          />
+          <button 
+            onClick={handleDownloadAnimatedSvg} 
+            className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 transition-colors"
+          >
             Download Animated SVG
           </button>
         </div>
