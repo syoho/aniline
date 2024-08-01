@@ -1,86 +1,53 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { generateImage } from '@/lib/generateImage';
-import { convertToAnimate } from '@/lib/convertToAnimate';
+import { useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
-  const [inputText, setInputText] = useState('');
-  const [initialImage, setInitialImage] = useState<string | null>(null);
-  const [singleLineSvg, setSingleLineSvg] = useState<string | null>(null);
+  const [inputText, setInputText] = useState("");
   const [animatedSvg, setAnimatedSvg] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleGenerateImage = async () => {
+  const handleGenerateAnimatedSvg = async () => {
+    if (!inputText.trim()) {
+      alert("Please enter some text");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/generate-image', {
-        method: 'POST',
+      const response = await fetch("/api/generate-animated-svg", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ text: inputText }),
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to generate image');
+        throw new Error("Failed to generate animated SVG");
       }
-  
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
-      setInitialImage(data.image);
+      setAnimatedSvg(data.animatedSvg);
     } catch (error) {
-      console.error('Error generating image:', error);
-      alert('Failed to generate image');
-    }
-  };
-
-  const handleConvertToSvg = async () => {
-    if (!initialImage) return;
-    try {
-      const formData = new FormData();
-      const blob = await fetch(initialImage).then(r => r.blob());
-      formData.append('image', blob, 'image.png');
-
-      const response = await fetch('/api/convert-to-svg', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('SVG conversion failed');
-      }
-
-      const svgString = await response.text();
-      setSingleLineSvg(svgString);
-    } catch (error) {
-      console.error('Error converting to SVG:', error);
-      alert('Failed to convert to SVG');
-    }
-  };
-
-  const handleConvertToAnimatedSvg = () => {
-    if (!singleLineSvg) return;
-    try {
-      const animatedSvgString = convertToAnimate(singleLineSvg, {
-        duration: 5,
-        delay: 0,
-        type: 'oneByOne',
-      });
-      setAnimatedSvg(animatedSvgString);
-    } catch (error) {
-      console.error('Error converting to animated SVG:', error);
-      alert('Failed to convert to animated SVG');
+      console.error("Error generating animated SVG:", error);
+      alert("Failed to generate animated SVG");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDownloadAnimatedSvg = () => {
     if (!animatedSvg) return;
-    const blob = new Blob([animatedSvg], { type: 'image/svg+xml' });
+    const blob = new Blob([animatedSvg], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'animated.svg';
+    a.download = "animated.svg";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -88,44 +55,69 @@ export default function Home() {
   };
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">SVG Image Generator</h1>
-      <div className="mb-4">
-        <input
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          className="border p-2 mr-2"
-          placeholder="Enter text for image"
-        />
-        <button onClick={handleGenerateImage} className="bg-blue-500 text-white p-2 rounded">
-          Generate Image
-        </button>
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Fixed Navbar */}
+      <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10">
+        <div className="max-w-full w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex h-24 items-center">
+            <div className="flex-shrink-0">
+              <h1 className="text-5xl font-bold text-black">AniLine</h1>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="flex-grow flex flex-col items-center justify-center py-2 pt-24">
+        <main className="flex flex-col items-center justify-center w-full flex-1 px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-6">
+            Animated SVG <span className="text-gray-700">Generator</span>
+          </h1>
+
+          <p className="mt-3 text-xl sm:text-2xl text-gray-600 mb-8">
+            Transform your text into animated SVG art
+          </p>
+
+          <div className="flex w-full max-w-md items-center mb-8">
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              className="flex-grow px-5 py-3 text-gray-700 bg-white border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              placeholder="Enter your text here"
+            />
+            <button
+              onClick={handleGenerateAnimatedSvg}
+              disabled={isLoading}
+              className={`px-5 py-3 bg-black text-white rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ${
+                isLoading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-gray-800"
+              }`}
+            >
+              {isLoading ? "Generating..." : "Generate"}
+            </button>
+          </div>
+
+          {animatedSvg && (
+            <div className="mt-8 bg-gray-100 rounded-lg p-6 w-full max-w-2xl">
+              <h2 className="text-2xl font-semibold text-black mb-4">
+                Generated Animated SVG
+              </h2>
+              <div
+                dangerouslySetInnerHTML={{ __html: animatedSvg }}
+                className="w-full mb-4 border border-gray-300 rounded p-2 bg-white"
+              />
+              <button
+                onClick={handleDownloadAnimatedSvg}
+                className="px-5 py-3 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+              >
+                Download Animated SVG
+              </button>
+            </div>
+          )}
+        </main>
       </div>
-      {initialImage && (
-        <div className="mb-4">
-          <img src={initialImage} alt="Generated" className="mb-2" />
-          <button onClick={handleConvertToSvg} className="bg-green-500 text-white p-2 rounded">
-            Convert to Single Line SVG
-          </button>
-        </div>
-      )}
-      {singleLineSvg && (
-        <div className="mb-4">
-          <div dangerouslySetInnerHTML={{ __html: singleLineSvg }} />
-          <button onClick={handleConvertToAnimatedSvg} className="bg-purple-500 text-white p-2 rounded mt-2">
-            Convert to Animated SVG
-          </button>
-        </div>
-      )}
-      {animatedSvg && (
-        <div className="mb-4">
-          <div dangerouslySetInnerHTML={{ __html: animatedSvg }} />
-          <button onClick={handleDownloadAnimatedSvg} className="bg-red-500 text-white p-2 rounded mt-2">
-            Download Animated SVG
-          </button>
-        </div>
-      )}
-    </main>
+    </div>
   );
 }
