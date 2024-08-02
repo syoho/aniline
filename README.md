@@ -31,15 +31,3 @@ We welcome contributions, especially from those with experience in image process
 ## Acknowledgements
 
 Special thanks to Javier Bórquez for the inspirational pintr project, and to the creators of vivus-instant. This project would not be possible without their groundbreaking work.
-
-## License
-
-[Add your chosen license here]
-
-## Contact
-
-[Your contact information or link to your profile]
-
----
-
-**Note:** This project is not affiliated with or endorsed by the creators of pintr or vivus-instant. It is an independent project inspired by their work.
