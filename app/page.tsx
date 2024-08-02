@@ -110,6 +110,22 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  const modifySvgForRepeat = (svgString: string): string => {
+    // 使用正则表达式查找所有的 animate 标签
+    const animateRegex = /<animate[^>]*>/g;
+
+    // 替换每个 animate 标签，添加 repeatCount="indefinite"
+    return svgString.replace(animateRegex, (match) => {
+      if (match.includes("repeatCount")) {
+        // 如果已经有 repeatCount，则替换它
+        return match.replace(/repeatCount="[^"]*"/, 'repeatCount="indefinite"');
+      } else {
+        // 如果没有 repeatCount，则添加它
+        return match.slice(0, -1) + ' repeatCount="indefinite">';
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Fixed Navbar */}
@@ -146,21 +162,23 @@ export default function Home() {
             <button
               onClick={handleGenerateAnimatedSvg}
               disabled={isLoading}
-              className="w-1/5 px-5 py-3 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 animate-gradient"
+              // className="w-1/5 px-5 py-3 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 animate-gradient"
+              className={`button animate-gradient`}
             >
               {isLoading ? "Generating..." : "Generate"}
             </button>
           </div>
 
           {animatedSvg && (
-            <div className="mt-8 bg-gray-100 rounded-lg p-6 w-full max-w-2xl">
+            <div className="mt-8 bg-gray-100 rounded-lg p-6 w-full max-w-6xl">
               <h2 className="text-2xl font-semibold text-black mb-4">
                 Generated Animated SVG
               </h2>
               <div
                 ref={svgRef}
                 dangerouslySetInnerHTML={{ __html: animatedSvg }}
-                className="w-full mb-4 border border-gray-300 rounded p-2 bg-white"
+                // className="w-full mb-4 border border-gray-300 rounded p-2 bg-white"
+                className="w-full mb-4 border border-gray-300 rounded p-2 bg-white flex items-center justify-center"
               />
               <button
                 onClick={handleDownloadAnimatedSvg}

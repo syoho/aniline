@@ -48,3 +48,25 @@ body {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+.button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20%; /* w-1/5 */
+  padding: 12px 20px; /* px-5 py-3 */
+  color: white;
+  border-radius: 0.375rem; /* rounded-md */
+  outline: none; /* focus:outline-none */
+  background-color: #000; /* 添加背景色以便测试 */
+  cursor: pointer; /* 可选: 添加鼠标指针效果 */
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.button:focus {
+  box-shadow: 0 0 0 4px rgba(128, 128, 128, 0.5); /* focus:ring-gray-400 focus:ring-opacity-50 */
+}
