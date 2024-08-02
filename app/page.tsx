@@ -1,12 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function Home() {
   const [inputText, setInputText] = useState("");
   const [animatedSvg, setAnimatedSvg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [placeholder, setPlaceholder] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const svgRef = useRef<HTMLDivElement>(null);
+
+  const fullPlaceholder = "Enter your text here";
+
+  useEffect(() => {
+    if (!isInputFocused) {
+      let index = 0;
+      let increasing = true;
+
+      intervalIdRef.current = setInterval(() => {
+        if (increasing) {
+          setPlaceholder(fullPlaceholder.slice(0, index + 1));
+          index++;
+          if (index === fullPlaceholder.length) {
+            increasing = false;
+          }
+        } else {
+          setPlaceholder(fullPlaceholder.slice(0, index - 1));
+          index--;
+          if (index === 0) {
+            increasing = true;
+          }
+        }
+      }, 200);
+    }
+
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+      }
+    };
+  }, [isInputFocused]);
+
+  useEffect(() => {
+    if (animatedSvg && svgRef.current) {
+      const svgElement = svgRef.current.querySelector("svg");
+      if (svgElement) {
+        svgElement.style.opacity = "0";
+        setTimeout(() => {
+          svgElement.style.opacity = "1";
+          svgElement.style.transition = "opacity 0.5s ease-in-out";
+        }, 100);
+      }
+    }
+  }, [animatedSvg]);
+
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+    }
+    setPlaceholder(fullPlaceholder);
+  };
 
   const handleGenerateAnimatedSvg = async () => {
     if (!inputText.trim()) {
@@ -54,6 +110,22 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  const modifySvgForRepeat = (svgString: string): string => {
+    // 使用正则表达式查找所有的 animate 标签
+    const animateRegex = /<animate[^>]*>/g;
+
+    // 替换每个 animate 标签，添加 repeatCount="indefinite"
+    return svgString.replace(animateRegex, (match) => {
+      if (match.includes("repeatCount")) {
+        // 如果已经有 repeatCount，则替换它
+        return match.replace(/repeatCount="[^"]*"/, 'repeatCount="indefinite"');
+      } else {
+        // 如果没有 repeatCount，则添加它
+        return match.slice(0, -1) + ' repeatCount="indefinite">';
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Fixed Navbar */}
@@ -78,35 +150,35 @@ export default function Home() {
             Transform your text into animated SVG art
           </p>
 
-          <div className="flex w-full max-w-md items-center mb-8">
+          <div className="flex w-full max-w-xl items-center mb-8 space-x-2">
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="flex-grow px-5 py-3 text-gray-700 bg-white border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              placeholder="Enter your text here"
+              onFocus={handleInputFocus}
+              className="w-3/5 flex-grow px-5 py-3 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              placeholder={placeholder}
             />
             <button
               onClick={handleGenerateAnimatedSvg}
               disabled={isLoading}
-              className={`px-5 py-3 bg-black text-white rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ${
-                isLoading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-gray-800"
-              }`}
+              // className="w-1/5 px-5 py-3 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 animate-gradient"
+              className={`button animate-gradient`}
             >
               {isLoading ? "Generating..." : "Generate"}
             </button>
           </div>
 
           {animatedSvg && (
-            <div className="mt-8 bg-gray-100 rounded-lg p-6 w-full max-w-2xl">
+            <div className="mt-8 bg-gray-100 rounded-lg p-6 w-full max-w-6xl">
               <h2 className="text-2xl font-semibold text-black mb-4">
                 Generated Animated SVG
               </h2>
               <div
+                ref={svgRef}
                 dangerouslySetInnerHTML={{ __html: animatedSvg }}
-                className="w-full mb-4 border border-gray-300 rounded p-2 bg-white"
+                // className="w-full mb-4 border border-gray-300 rounded p-2 bg-white"
+                className="w-full mb-4 border border-gray-300 rounded p-2 bg-white flex items-center justify-center"
               />
               <button
                 onClick={handleDownloadAnimatedSvg}

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     // Step 3: Convert SVG to animated SVG
     const animatedSvgString = convertToAnimate(svgString, {
-      duration: 5,
+      duration: 50,
       delay: 0,
       type: "oneByOne",
     });
